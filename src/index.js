@@ -16,6 +16,11 @@ const PORT = process.env.JOBSPY_PORT || 9423;
 const HOST = process.env.JOBSPY_HOST || '0.0.0.0';
 const ENABLE_SSE = !!(process.env.ENABLE_SSE | 0);
 
+// Disable logging for stdio transport to prevent JSON interference
+if (!ENABLE_SSE) {
+  logger.level = 'error'; // Only show errors in stdio mode
+}
+
 // Create the MCP server
 const server = new McpServer({
   name: 'JobSpy MCP Server',
@@ -26,9 +31,10 @@ const server = new McpServer({
 
 const sseManager = new SseManager(server);
 
-searchJobsPrompt(server);
-jobRecommendationsPrompt(server);
-resumeFeedbackPrompt(server);
+// Temporarily disable prompts to fix JSON communication issues
+// searchJobsPrompt(server);
+// jobRecommendationsPrompt(server);
+// resumeFeedbackPrompt(server);
 searchJobsTool(server, sseManager);
 
 // Initialize transports

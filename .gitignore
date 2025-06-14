@@ -2,3 +2,4 @@ node_modules
 dist
 tmp
 
+mcp-server-jobspy.log

@@ -37,7 +37,10 @@ export const searchJobsTool = (server, sseManager) =>
     async (params, extra) => {
       let progressInterval;
       try {
-        logger.info('Received search_jobs request', { params, extra });
+        // Reduce logging in stdio mode to prevent JSON interference
+        if (process.env.ENABLE_SSE) {
+          logger.info('Received search_jobs request', { params, extra });
+        }
 
         // Track progress for SSE clients
         if (extra.sessionId && sseManager.hasConnection(extra.sessionId)) {
@@ -148,7 +151,10 @@ function convertToISODate(dateStr) {
 export function searchJobsHandler(params) {
   let result;
   try {
-    logger.info('Starting job search with parameters', { params });
+    // Reduce logging in stdio mode to prevent JSON interference
+    if (process.env.ENABLE_SSE) {
+      logger.info('Starting job search with parameters', { params });
+    }
 
     // Clean params by removing empty strings and 0 values
     const cleanedParams = {};
@@ -165,15 +171,21 @@ export function searchJobsHandler(params) {
       cleanedParams[key] = value;
     }
 
-    logger.info('Cleaned parameters', { cleanedParams });
+    if (process.env.ENABLE_SSE) {
+      logger.info('Cleaned parameters', { cleanedParams });
+    }
 
     const validatedParams = z.object(searchParams).parse(cleanedParams);
 
-    logger.info('Validated parameters', { validatedParams });
+    if (process.env.ENABLE_SSE) {
+      logger.info('Validated parameters', { validatedParams });
+    }
 
     const args = buildCommandArgs(validatedParams);
-    const cmd = `sudo docker run jobspy ${args.join(' ')}`;
-    logger.info(`Spawning process with args: ${cmd}`);
+    const cmd = `docker run jobspy ${args.join(' ')}`;
+    if (process.env.ENABLE_SSE) {
+      logger.info(`Spawning process with args: ${cmd}`);
+    }
 
     const timeout = params.timeout || 60000; // Default timeout of 60 seconds
     result = execSync(cmd, { timeout }).toString();
